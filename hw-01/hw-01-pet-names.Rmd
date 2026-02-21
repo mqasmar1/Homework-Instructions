@@ -1,6 +1,6 @@
 ---
 title: "HW 01 - Pet names"
-author: "[your name here]"
+author: "Max Asmar"
 subtitle: "Meet the toolkit"
 output: 
   tufte::tufte_html:
@@ -373,13 +373,13 @@ ggplot(comb_name_props, aes(x = cat_prop, y = dog_prop)) +
   theme_minimal() +
   labs(x = "Proportion of cats", y = "Proportion of dogs") +
   xlim(0.002, 0.01) +
-  ylim(0.002, 0.01) +
-  ggimage::geom_emoji(
-      image = "1f436", aes(x = 0.003, y = 0.009), size = 0.1
-      ) +
-  ggimage::geom_emoji(
-      image = "1f431", aes(x = 0.009, y = 0.003), size = 0.1
-      )
+  ylim(0.002, 0.01)
+  # ggimage::geom_emoji(
+      # image = "1f436", aes(x = 0.003, y = 0.009), size = 0.1
+      # ) +
+  # ggimage::geom_emoji(
+      # image = "1f431", aes(x = 0.009, y = 0.003), size = 0.1
+      # )
 ```
 
 a.  What names are more common for cats than dogs? The ones above the line or the ones below the line?
