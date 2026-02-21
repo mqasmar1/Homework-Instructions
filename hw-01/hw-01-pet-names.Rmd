@@ -271,6 +271,8 @@ There are 52,519 pets included in the dataset. I determined this by running ?sea
 
 2.  Again, according to the data dictionary, how many variables do we have for each pet? Write your answer in the R Markdown document under Exercise 2.
 
+There are 7 variables for each pet. I determined this by running ?seattlepets in console and it said there were 7 variables in the dataframe.
+
 *After completing this exercise:*
 
 🧶 Knit → ✅ Commit with message `"Completed Exercise 2"` → ⬆️ Push
