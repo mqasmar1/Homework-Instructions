@@ -279,11 +279,13 @@ There are 7 variables for each pet. I determined this by running ?seattlepets in
 
 3.  What are the three most common pet names in Seattle? To do this you will need to count the frequencies of each pet name and display the results in descending order of frequency so that you can easily see the top three most popular names. The following code does exactly that. 
 
+The three most common pet names in Seattle are Lucy, Charlie, and Luna.
+
 ```{marginfigure}
 The two lines of code can be read as "Start with the seattlepets data frame, and then count the animal_names, and display the results sorted in descending order. The 'and then' in the previous sentence maps to %>%, the pipe operator, which takes what comes before it and plugs it in as the first argument of the function that comes after it."
 ```
 
-```{r count, include = TRUE}
+```{r count, include = TRUE, eval=TRUE}
 seattlepets %>%
   count(animal_name, sort = TRUE)
 ```
