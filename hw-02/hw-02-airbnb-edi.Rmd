@@ -2,15 +2,15 @@
 title: "HW 02 - Airbnb listings in Edinburgh"
 author: "Max Asmar"
 output: 
-  tufte::tufte_html:
-    css: ../lab.css
-    tufte_variant: "envisioned"
-    highlight: pygments
   tufte::tufte_handout:
     latex_engine: xelatex
     highlight: pygments
     keep_tex: true
     citation_package: natbib
+  tufte::tufte_html:
+    css: ../lab.css
+    tufte_variant: "envisioned"
+    highlight: pygments
 link-citations: true
 ---
 
@@ -278,8 +278,16 @@ New Town has the highest typical prices of Airbnbs in Edinburgh because it has t
 - Ridge plots: `geom_density_ridges()` (requires `library(ggridges)`)
 
 
-```{r review-scores-viz, eval = FALSE}
-# Your code here
+```{r review-scores-viz, eval = TRUE}
+edibnb %>%
+  ggplot(aes(x = review_scores_rating)) +
+  geom_histogram(binwidth=10) +
+  facet_wrap(~neighbourhood) +
+  labs(
+    x = "Review Scores Rating",
+    y = "Frequency",
+    title = "Review Scores for Airbnbs across Edinburgh Neighborhoods"
+  )
 ```
 
 *Interpretation (2-3 sentences):*
@@ -287,6 +295,8 @@ New Town has the highest typical prices of Airbnbs in Edinburgh because it has t
 - How do Airbnb guests rate properties in general (are ratings generally high, low, or varied)?
 - How do the neighborhoods compare to each other?
 - Are there any neighborhoods that stand out as having particularly high or low ratings?
+
+In general, Airbnb guests rate properties highly, with most ratings falling in between 75-100. Leith and Old Town have the highest quantity of very positive ratings around 90-100. The Southside neighborhood has a smaller quantity of ratings but has a higher proportion of lower ratings.
 
 *After completing Exercise 5:*
 
