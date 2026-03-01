@@ -95,10 +95,15 @@ You can find out more about the dataset by inspecting its documentation, which y
 
 1.  How many observations (rows) does the dataset have? Instead of hard coding the number in your answer, use inline code.
 
+There are `r nrow(edibnb)` observations in the dataset.
+
 **Hint:** In your answer, type a backtick, then r, then space, then `nrow(edibnb)`, then close with another backtick. When you knit, this will show the actual number instead of the code.
 
 
 2.  Run `View(edibnb)` in your Console to view the data in the data viewer. What does each row in the dataset represent?
+
+Each observation in the dataset represents an airbnb in Edinburgh and contains information about its location, price, and features as variables. 
+
 
 *After completing Exercises 1-2:*
 
