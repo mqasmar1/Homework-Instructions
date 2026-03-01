@@ -141,7 +141,7 @@ ggplot(data = dataset_name, mapping = aes(x = variable)) +
   a) Experiment with binwidth
 
 Try binwidths of 25, 50, and 100. Which gives you the most useful view of the data?
-```{r price-hist-experiments}
+```{r price-hist-experiments, eval=TRUE, fig.height=6, fig.width=8}
 # Try binwidth = 25
 ggplot(data = edibnb, mapping = aes(x = price)) +
   geom_histogram(binwidth = 25) +
@@ -149,21 +149,47 @@ ggplot(data = edibnb, mapping = aes(x = price)) +
 
 # Try binwidth = 50
 
+ggplot(data = edibnb, mapping = aes(x = price)) +
+  geom_histogram(binwidth = 50) +
+  facet_wrap(~neighbourhood)
 
 # Try binwidth = 100
+
+ggplot(data = edibnb, mapping = aes(x = price)) +
+  geom_histogram(binwidth = 100) +
+  facet_wrap(~neighbourhood)
 ```
 
 *Which binwidth did you choose and why?*
+
+I chose the binwidth to be 100 because it allowed me to see most clearly the distribution of Airbnb prices, even though it sacrificed detail. There are 14 plots on the overall grid, which makes it harder to view each one individually. I addressed this by increasing binwidth size.
 
  b) Experiment with facet layout*
 
 Try these three options:
 
+```{r price-hist-experiments2, eval=TRUE, fig.height=6, fig.width=8}
+ggplot(data = edibnb, mapping = aes(x = price)) +
+  geom_histogram(binwidth = 100) +
+  facet_wrap(~neighbourhood)
+  
+ggplot(data = edibnb, mapping = aes(x = price)) +
+  geom_histogram(binwidth = 100) +
+  facet_wrap(~neighbourhood, ncol = 1)
+  
+ggplot(data = edibnb, mapping = aes(x = price)) +
+  geom_histogram(binwidth = 100) +
+  facet_wrap(~neighbourhood, nrow = 1)
+```
+
 - `facet_wrap(~neighbourhood)` - wraps into a grid
 - `facet_wrap(~neighbourhood, ncol = 1)` - stacks vertically  
 - `facet_wrap(~neighbourhood, nrow = 1)` - arranges horizontally
 
+
 *Which layout did you choose and why?*
+
+I chose the facet that wraps the neighborhood into a grid. I chose this because the vertical stack was not very intuitive to read and the horizontal stack was too cluttered for interpretation, for my personal preference.
 
  c) Create your final visualization
 
@@ -172,8 +198,10 @@ Try these three options:
 ```
 
 Use your chosen binwidth and layout:
-```{r final-price-histogram, eval = FALSE}
-# Your final code here
+```{r final-price-histogram, eval = TRUE}
+ggplot(data = edibnb, mapping = aes(x = price)) +
+  geom_histogram(binwidth = 100) +
+  facet_wrap(~neighbourhood)
 ```
 
 *After completing Exercise 3:*
