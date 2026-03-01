@@ -1,6 +1,6 @@
 ---
 title: "HW 02 - Airbnb listings in Edinburgh"
-author: "[Your Name]"
+author: "Max Asmar"
 output: 
   tufte::tufte_html:
     css: ../lab.css
