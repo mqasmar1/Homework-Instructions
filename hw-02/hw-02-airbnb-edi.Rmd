@@ -212,12 +212,12 @@ ggplot(data = edibnb, mapping = aes(x = price)) +
 
   a) Identify the top 5 neighborhoods by median price. Complete the pipeline to find neighborhoods with the highest median prices:
   
-```{r top-5-neighborhoods, eval = FALSE}
-top_5 %
-  group_by(___) %>%
-  summarise(median_price = median(___, na.rm = TRUE)) %>%
-  arrange(desc(___)) %>%
-  slice_max(___, n = ___)
+```{r top-5-neighborhoods, eval = TRUE}
+top_5 <- edibnb %>%
+  group_by(neighbourhood) %>%
+  summarise(median_price = median(price, na.rm = TRUE)) %>%
+  arrange(desc(median_price)) %>%
+  slice_max(median_price, n = 5)
 
 top_5
 ```
@@ -225,34 +225,34 @@ top_5
   b) Create ridge plots for these neighborhoods. 
   
   Ridge plots show distributions stacked vertically, making them easy to compare.
-```{r ridge-plots, message = FALSE, eval = FALSE}
+```{r ridge-plots, message = FALSE, eval = TRUE}
 library(ggridges)
 
 # Filter for top 5 neighborhoods and create ridge plot
 edibnb %>%
-  filter(neighbourhood %in% ___$___) %>%
-  ggplot(aes(x = ___, y = ___)) +
+  filter(neighbourhood %in% top_5$neighbourhood) %>%
+  ggplot(aes(x = price, y = neighbourhood)) +
   geom_density_ridges() +
   labs(
-    x = "___",
-    y = "___",
-    title = "___"
+    x = "Median price of Airbnb",
+    y = "Edinburgh Neighborhoods",
+    title = "Top 5 neighborhoods with highest median price of Airbnb in Edinburgh"
   )
 ```
 
   c) Calculate the summary statistics.
   
-```{r summary-stats, eval = FALSE}
+```{r summary-stats, eval = TRUE}
 edibnb %>%
-  filter(neighbourhood %in% ___$___) %>%
-  group_by(___) %>%
+  filter(neighbourhood %in% top_5$neighbourhood) %>%
+  group_by(neighbourhood) %>%
   summarise(
-    min = min(___, na.rm = TRUE),
-    mean = mean(___, na.rm = TRUE),
-    median = ___,
-    sd = ___,
-    IQR = ___,
-    max = ___
+    min = min(price, na.rm = TRUE),
+    mean = mean(price, na.rm = TRUE),
+    median = median(price, na.rm = TRUE),
+    sd = sd(price, na.rm = TRUE),
+    IQR = IQR(price, na.rm = TRUE),
+    max = max(price, na.rm = TRUE)
   )
 ```
 
@@ -261,6 +261,8 @@ Using both the visualization and summary statistics, describe the distribution o
 - Which neighborhood has the highest typical prices?
 - Which has the most variation (spread) in prices?
 - Are there any notable patterns or outliers?
+
+New Town has the highest typical prices of Airbnbs in Edinburgh because it has the highest mean and median prices of 136 and 100 GBP respectively. Old town has the most variation in prices because it has the highest standard deviation in the summary statistics (110). One outlier I noticed is that Marchmont has the lowest maximum price at 570 GBP, which is 27% lower than the next lowest maximum. On the ridge plot, all of the neighborhoods tend to have a similar distribution where there is a peak at around 125 GBP. 
 
 *After completing Exercise 4:*
 
