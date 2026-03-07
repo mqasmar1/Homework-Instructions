@@ -2,15 +2,15 @@
 title: "HW 03 - Road traffic accidents"
 author: "Max Asmar"
 output: 
-  tufte::tufte_html:
-    css: ../lab.css
-    tufte_variant: "envisioned"
-    highlight: pygments
   tufte::tufte_handout:
     latex_engine: xelatex
     highlight: pygments
     keep_tex: true
     citation_package: natbib
+  tufte::tufte_html:
+    css: ../lab.css
+    tufte_variant: "envisioned"
+    highlight: pygments
 link-citations: true
 ---
 
@@ -184,7 +184,7 @@ I used road_surface, weather, and severity for my variables.
 
 **Interpretation (3-4 sentences):** What patterns or insights does your visualization reveal?
 
-I notice that most "serious" accidents occur when the road condition is either dry or wet or damp. I also notice that most "serious" accidents occur when the weather is either "Fine + high winds" or "Snowing + No high winds". Outside of these conditions it seems that most car accidents have slight severity.
+I notice that most "serious" accidents occur when the road condition is either dry or wet or damp. I also notice that most "serious" accidents occur when the weather is either "Fine + high winds" or "Snowing + No high winds". Outside of these conditions it seems that most car accidents have slight severity. I also notice that there are a lot of empty tiles.
 
 *After completing Exercise 4:*
 
