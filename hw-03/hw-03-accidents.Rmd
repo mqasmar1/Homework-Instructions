@@ -160,16 +160,31 @@ During weekdays, accidents tend to occur between 8:00 am and 6:00 pm, whereas du
 - Do certain vehicle types have more accidents in specific conditions?
 
 **Your visualization:**
-```{r custom-visualization, eval = FALSE}
-# Your code here
+```{r custom-visualization, eval = TRUE}
+ggplot(data = accidents, aes(x = weather, y = road_surface, fill = severity)) +
+  geom_tile() +
+  theme_minimal() +
+  coord_flip() +
+  labs(
+    title = "Severity of Car Accidents with respect to weather and road conditions",
+    subtitle = "___",
+    x = "Weather condition",
+    y = "Road condition",
+    fill = "Accident severity"
+  )
 ```
 
 **What question does your visualization answer?**
 
+How are different road and weather conditions associated with the severity of car accidents?
 
 **What variables were used:** 
 
+I used road_surface, weather, and severity for my variables.
+
 **Interpretation (3-4 sentences):** What patterns or insights does your visualization reveal?
+
+I notice that most "serious" accidents occur when the road condition is either dry or wet or damp. I also notice that most "serious" accidents occur when the weather is either "Fine + high winds" or "Snowing + No high winds". Outside of these conditions it seems that most car accidents have slight severity.
 
 *After completing Exercise 4:*
 
