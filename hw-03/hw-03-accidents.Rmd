@@ -76,8 +76,12 @@ The data can be found in the **dsbox** package, and it's called `accidents`. Sin
 
 1.  How many observations (rows) does the dataset have? Instead of hard coding the number in your answer, use inline code.
 
+There are `r nrow(accidents)` observations in the dataset
+
 
 2.  Run `View(accidents)` in your Console to view the data in the data viewer. What does each row in the dataset represent?
+
+Each row in the dataset represents a set of information about a distinct accident. Some variables in each row include longitude, latitude, severity, and casualities.
 
 🧶 Knit → ✅ Commit with message `"Completed Exercises 1-2"` → ⬆️ Push
 
