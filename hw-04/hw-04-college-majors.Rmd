@@ -1,6 +1,6 @@
 ---
 title: "HW 04 - What should I major in?"
-author: "[Your Name]"
+author: "Max Asmar"
 output: 
   tufte::tufte_html:
     css: ../lab.css
