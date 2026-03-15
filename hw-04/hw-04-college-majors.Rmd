@@ -2,15 +2,15 @@
 title: "HW 04 - What should I major in?"
 author: "Max Asmar"
 output: 
-  tufte::tufte_html:
-    css: ../lab.css
-    tufte_variant: "envisioned"
-    highlight: pygments
   tufte::tufte_handout:
     latex_engine: xelatex
     highlight: pygments
     keep_tex: true
     citation_package: natbib
+  tufte::tufte_html:
+    css: ../lab.css
+    tufte_variant: "envisioned"
+    highlight: pygments
 link-citations: true
 ---
 
@@ -97,7 +97,7 @@ In the next section we aim to answer these questions.
 
 In order to answer this question all we need to do is sort the data. We use the `arrange` function to do this, and sort it by the `unemployment_rate` variable. By default `arrange` sorts in ascending order, which is what we want here -- we're interested in the major with the *lowest* unemployment rate.
 
-```{r lowest-unemp}
+```{r lowest-unemp, eval=TRUE}
 college_recent_grads %>%
   arrange(unemployment_rate)
 ```
@@ -111,7 +111,7 @@ Note how easily we expanded our code with adding another step to our pipeline,
 with the pipe operator: `%>%`.
 ```
 
-```{r lowest-unemp-select}
+```{r lowest-unemp-select, eval=TRUE}
 college_recent_grads %>%
   arrange(unemployment_rate) %>%
   select(rank, major, unemployment_rate)
@@ -121,12 +121,13 @@ Ok, this is looking better, but do we really need to display all those decimal p
 
 We can use the `percent()` function to clean up the display a bit.
 
-```{r}
+```{r lowest-unemp-with-percent, eval=TRUE}
 college_recent_grads %>%
   arrange(unemployment_rate) %>%
   select(rank, major, unemployment_rate) %>%
   mutate(unemployment_rate = percent(unemployment_rate))
 ```
+The major with the lowest unemployment rate are mathematics and computer science, miltiary technologies, botany, soil science, and educational administration and supervision. In the dataset, all of these majors have a 0% unemployment rate. 
 
 ## Which major has the highest percentage of women?
 
@@ -136,7 +137,7 @@ To answer such a question we need to arrange the data in descending order. For e
 The `desc` function specifies that we want `unemployment_rate` in descending order.
 ```
 
-```{r}
+```{r highest-unemp, eval=TRUE}
 college_recent_grads %>%
   arrange(desc(unemployment_rate)) %>%
   select(rank, major, unemployment_rate)
@@ -146,12 +147,14 @@ college_recent_grads %>%
 
 **Hint:** The variable for proportion of women is `sharewomen`, and total number of people is `total`.
 
-```{r top-women-majors, eval = FALSE}
+```{r top-women-majors, eval = TRUE}
 college_recent_grads %>%
-  arrange(desc(___)) %>%
-  select(___, ___, ___) %>%
-  top_n(___)
+  arrange(desc(sharewomen)) %>%
+  select(major, total, sharewomen) %>%
+  top_n(3)
 ```
+
+The majors with the highest proportion of women are Early Childhood Education, Communication Disorders Sciences and Services, and Medical Assisting Services. The percentage of women in each major is 96.9%, 96.8%, and 92.8% respectively.
 
 ## How do the distributions of median income compare across major categories?
 
@@ -163,13 +166,15 @@ There are three types of incomes reported in this data frame: `p25th`, `median`,
 
 2.  Why do we often choose the median, rather than the mean, to describe the typical income of a group of people?
 
+We often choose the median rather than the mean to get a better measure of center that is less impacted by outliers in the dataset. For example, a high value would greatly skew the average of a dataset but would not affect the median nearly as much.
+
 The question we want to answer "How do the distributions of median income compare across major categories?". We need to do a few things to answer this question: First, we need to group the data by `major_category`. Then, we need a way to summarize the distributions of median income within these groups. This decision will depend on the shapes of these distributions. So first, we need to visualize the data.
 
 We use the `ggplot()` function to do this. The first argument is the data frame, and the next argument gives the mapping of the variables of the data to the `aes`thetic elements of the plot.
 
 Let's start simple and take a look at the distribution of all median incomes, without considering the major categories.
 
-```{r fig,height=2}
+```{r fig,height=2, eval=TRUE}
 ggplot(data = college_recent_grads, mapping = aes(x = median)) +
   geom_histogram()
 ```
@@ -184,16 +189,43 @@ This is telling us that we might want to reconsider the binwidth we chose for ou
 
 3.  Try binwidths of \$1000 and \$5000 and choose one. Explain your reasoning for your choice. Note that the binwidth is an argument for the `geom_histogram` function. So to specify a binwidth of \$1000, you would use `geom_histogram(binwidth = 1000)`.
 
-```{r binwidth-1000, eval = FALSE}
+```{r binwidth-1000, eval = TRUE}
 # Try binwidth = 1000
+ggplot(data = college_recent_grads, mapping = aes(x = median)) +
+  geom_histogram(binwidth = 1000) +
+  labs(
+    title = "Median earnings across recent college graduates",
+    x = "Median earnings (dollars)",
+    y = "Count"
+  )
 ```
-```{r binwidth-5000}
+```{r binwidth-5000, eval = TRUE}
 # Try binwidth = 5000
+ggplot(data = college_recent_grads, mapping = aes(x = median)) +
+  geom_histogram(binwidth = 5000) +
+  labs(
+    title = "Median earnings across recent college graduates",
+    x = "Median earnings (dollars)",
+    y = "Count"
+  )
+```
+
+I think the graph with binwidth as 5000 is more intuitive to read and better shows the general shape of the distribution.
+
+```{r binwidth-final-5000, eval = TRUE}
+# Try binwidth = 5000
+ggplot(data = college_recent_grads, mapping = aes(x = median)) +
+  geom_histogram(binwidth = 5000) +
+  labs(
+    title = "Median earnings across recent college graduates",
+    x = "Median earnings (dollars)",
+    y = "Count"
+  )
 ```
 
 We can also calculate summary statistics for this distribution using the `summarise` function:
 
-```{r}
+```{r sum-stats, eval=TRUE}
 college_recent_grads %>%
   summarise(min = min(median), max = max(median),
             mean = mean(median), med = median(median),
@@ -204,14 +236,16 @@ college_recent_grads %>%
 
 4.  Based on the shape of the histogram you created in the previous exercise, determine which of these summary statistics is useful for describing the distribution. Write up your description (remember shape, center, spread, any unusual observations) and include the summary statistic output as well.
 
+I think that the minimum and maximum are helpful for describing the distribution, as the minimum median earnings across college majors is 22,000 dollars while the maximum is 110,000 dollars. The graph is skewed right, which is represented in the quartile ranges. The median of the median earnings across majors is 36,000 dollars which is much closer to the 1st quartile of 33,000 dollars compared to the 3rd quartile of 45,000 dollars. One unusual observation is that the range of the dataset is very large. More specifically, the range is 88,000 dollars. 
+
 5.  Plot the distribution of `median` income using a histogram, faceted by `major_category`. Use the `binwidth` you chose in the earlier exercise.
 
 **Hint:** Add `facet_wrap(~major_category)` to your ggplot code.
 
-```{r income-by-category, eval = FALSE}
-ggplot(data = ___, mapping = aes(x = ___)) +
-  geom_histogram(binwidth = ___) +
-  facet_wrap(~___)
+```{r income-by-category, eval = TRUE}
+ggplot(data = college_recent_grads, mapping = aes(x = median)) +
+  geom_histogram(binwidth = 5000) +
+  facet_wrap(~major_category)
 ```
 
 Now that we've seen the shapes of the distributions of median incomes for each major category, we should have a better idea for which summary statistic to use to quantify the typical median income.
@@ -223,19 +257,24 @@ Fill-in the blanks in the code below and change eval = TRUE to test your output.
 ```
 
 
-```{r eval=FALSE}
+```{r eval=TRUE}
 college_recent_grads %>%
   group_by(major_category) %>%
-  summarise(___ = ___(median)) %>%
-  arrange(___)
+  summarise(mean = mean(median)) %>%
+  arrange(desc(mean))
 ```
+
+Using the greatest mean as a measure of highest typical median income across major categories, I observe that engineering has the highest typical median income with a mean of 57,383 dollars.
 
 7.  Which major category is the least popular in this sample? To answer this question we use a new function called `count`, which first groups the data and then counts the number of observations in each category (see below). Add to the pipeline appropriately to arrange the results so that the major with the lowest observations is on top.
 
-```{r}
+```{r eval=TRUE}
 college_recent_grads %>%
-  count(major_category)
+  count(major_category) %>%
+  arrange(n)
 ```
+
+The interdisciplinary major category is the least popular in this sample with only 1 observation.
 
 🧶 Knit → ✅ Commit with message `"Completed Exercise 1-7"` → ⬆️ Push
 
