@@ -210,7 +210,7 @@ ggplot(data = college_recent_grads, mapping = aes(x = median)) +
   )
 ```
 
-I think the graph with binwidth as 5000 is more intuitive to read and better shows the general shape of the distribution.
+I think the graph with binwidth as 5000 is more intuitive to read and better shows the general shape of the distribution. I also will use binwidth = 5000 because it is less susceptible to noise in the data than using binwidth = 1000. 
 
 ```{r binwidth-final-5000, eval = TRUE}
 # Try binwidth = 5000
@@ -236,7 +236,7 @@ college_recent_grads %>%
 
 4.  Based on the shape of the histogram you created in the previous exercise, determine which of these summary statistics is useful for describing the distribution. Write up your description (remember shape, center, spread, any unusual observations) and include the summary statistic output as well.
 
-I think that the minimum and maximum are helpful for describing the distribution, as the minimum median earnings across college majors is 22,000 dollars while the maximum is 110,000 dollars. The graph is skewed right, which is represented in the quartile ranges. The median of the median earnings across majors is 36,000 dollars which is much closer to the 1st quartile of 33,000 dollars compared to the 3rd quartile of 45,000 dollars. One unusual observation is that the range of the dataset is very large. More specifically, the range is 88,000 dollars. 
+I think that the minimum and maximum are helpful for describing the distribution, as the minimum median earnings across college majors is 22,000 dollars while the maximum is 110,000 dollars. The graph is skewed right, which is represented in the quartile ranges which are also helpful for describing the distribution. For example, the median of the median earnings across majors is 36,000 dollars which is much closer to the 1st quartile of 33,000 dollars compared to the 3rd quartile of 45,000 dollars. I think using the quartiles is a better measure of the distribution than using the (max-min) range because it is less susceptible to outliers in the dataset. One unusual observation is that the range of the dataset is very large. More specifically, the range is 88,000 dollars. 
 
 5.  Plot the distribution of `median` income using a histogram, faceted by `major_category`. Use the `binwidth` you chose in the earlier exercise.
 
@@ -245,6 +245,11 @@ I think that the minimum and maximum are helpful for describing the distribution
 ```{r income-by-category, eval = TRUE}
 ggplot(data = college_recent_grads, mapping = aes(x = median)) +
   geom_histogram(binwidth = 5000) +
+  labs(
+    title = "Median earnings across recent college graduates",
+    x = "Median earnings (dollars)",
+    y = "Count"
+  ) +
   facet_wrap(~major_category)
 ```
 
@@ -284,7 +289,7 @@ One of the sections of the [FiveThirtyEight story](https://fivethirtyeight.com/f
 
 First, let's create a new vector called `stem_categories` that lists the major categories that are considered STEM fields.
 
-```{r}
+```{r eval=TRUE}
 stem_categories <- c("Biology & Life Science",
                      "Computers & Mathematics",
                      "Engineering",
@@ -293,7 +298,7 @@ stem_categories <- c("Biology & Life Science",
 
 Then, we can use this to create a new variable in our data frame indicating whether a major is STEM or not.
 
-```{r}
+```{r eval=TRUE}
 college_recent_grads <- college_recent_grads %>%
   mutate(major_type = ifelse(major_category %in% stem_categories, "stem", "not stem"))
 ```
@@ -329,32 +334,35 @@ college_recent_grads %>%
 
 **Hint:** Use `filter()` with two conditions, then `select()` the relevant variables, then `arrange()` appropriately.
 
-```{r stem-below-median, eval=FALSE}
+```{r stem-below-median, eval=TRUE}
 college_recent_grads %>%
   filter(
-    ___ == "___",
-    ___ <= ___
+    major_type == "stem",
+    median <= 36000
   ) %>%
-  select(___, ___, ___, ___) %>%
-  arrange(desc(___))
+  select(major, median, p25th, p75th) %>%
+  arrange(desc(median))
 ```
 
+The STEM majors that have median salaries less than or equal to the median for all majors' median earnings are Geosciences, Environmental Science, Multi-Disciplinary or General Science, Physiology, Communication Technologies, Neuroscience, Atmospheric Sciences and Meteorology, Miscellaneous Biology, Biology, Ecology, Zoology. Respectively they have medians of 36,000 dollars, 35,600 dollars, 35,000 dollars, 35,000 dollars, 35,000 dollars, 35,000 dollars, 35,000 dollars, 33,500 dollars, 33,400 dollars, 33,000 dollars, and 26,000 dollars. This information disproves a common belief that STEM majors lead to high salaries, as many STEM majors have median incomes below the median for all college majors.
 
 
 ## What types of majors do women tend to major in?
 
 9.  Create a scatterplot of median income vs. proportion of women in that major, coloured by whether the major is in a STEM field or not. Describe the association between these three variables.
 
-```{r women-income-stem, eval = FALSE}
-ggplot(data = college_recent_grads, aes(x = ___, y = ___, color = ___)) +
+```{r women-income-stem, eval = TRUE}
+ggplot(data = college_recent_grads, aes(x = median, y = sharewomen, color = major_type)) +
   geom_point() +
   labs(
-    x = "___",
-    y = "___",
-    color = "___",
-    title = "___"
+    x = "Median income (dollars)",
+    y = "Proportion of Women",
+    color = "Major Type",
+    title = "Relationship between median income, proportion of women, and major type"
   )
 ```
+
+There is a negative association between proportion of women in a college major and median income. In other words, majors with more women are associated with lower median incomes. Many of these majors with more women are in non-stem fields, which you can see by the concentration of red points in the top left of the graph and concentration of blue points towards the bottom middle of the graph. Because women might often feel more valued and included in these majors rather than higher income majors, it could perpetuate income inequality between men and women.
 
 ## Further exploration
 
@@ -366,15 +374,23 @@ ggplot(data = college_recent_grads, aes(x = ___, y = ___, color = ___)) +
 - What is the relationship between sample size and median income?
 - Do majors with higher proportions of full-time workers have higher median incomes?
 
-**Your research question:** 
+**Your research question:** Which major category has the best employment prospects?
 
 
 **Your analysis (code and visualization/summary statistics):**
-```{r custom-analysis}
-# Your code here
+```{r custom-analysis, eval = TRUE}
+college_recent_grads %>%
+  group_by(major_category) %>%
+  summarise(
+    employment_rate = median(employed/(unemployed+employed)),
+    unemployment_rate = median(unemployed/(unemployed+employed)),
+    full_time_to_part_time_proportion = median(employed_fulltime/employed_parttime)
+  )
 ```
 
 **Your findings (3-4 sentences):**
+
+Looking at my summary statistics, I can see that the major categories with the greatest employment rates are Education, Physical Sciences, and Agriculture. The major categories with the highest unemployment rates are Computers & Mathematics, Social Science, and Arts. I also notice that the business major category is the most likely to be employed full time compared to part time, with a ratio of 5:1. In comparison, the major category that is the least likely to be employed full time compared to part time is Health. One thing I noticed however, was that the employment rate and unemployment rate for the Industrial Arts major category has a value of "NA". I think this means that the denominator might be 0 meaning there are not enough observations of unemployed and/or employed graduates. 
 
 🧶 Knit → ✅ Commit with message `"Completed Exercise 8-10"` → ⬆️ Push
 
