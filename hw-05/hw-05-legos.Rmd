@@ -1,6 +1,6 @@
 ---
 title: "HW 05 - Legos"
-author: "[Your Name]"
+author: "Max Asmar"
 output: 
   tufte::tufte_html:
     css: ../lab.css
