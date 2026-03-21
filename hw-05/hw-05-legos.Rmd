@@ -65,15 +65,30 @@ head(lego_sales)
 summary(lego_sales)
 
 # View the full dataset in a spreadsheet-style viewer
-View(lego_sales)
+# View(lego_sales)
 ```
 
 **Questions to consider as you explore:**
 - How many rows (observations) are in the dataset?
+
+There are 620 observations in the dataset. I found this by using the glimpse() function on the dataset.
+
 - What variables are included?
+
+The variables for each observation are first_name, last_name, age, phone_number, set_id, number, theme, subtheme, year, name, pieces, us_price, image_url, and quantity. I found this using the glimpse() function on the dataset.
+
 - What types of data are in each variable (numeric, character, etc.)?
+
+The numeric variables are age, set_id, number, year, pieces, us_price, and quantity. The string variables are first_name, last_name, phone_number, theme, subtheme, name, and image_url. I found this by using the glimpse() function on the dataset.
+
 - Are there any missing values (NAs)?
+
+Yes, there are many missing values in the dataset. I found this by using the summary() function on the dataset.
+
 - What is the range of ages? Prices? Quantities?
+
+Using the summary() function on the dataset, I found that the range of ages is from 16 to 68 years inclusive.  I also determined that the range of prices is from 3.99 to 349.99 dollars, inclusive. The range of quantities is from 1 to 5, inclusive.
+
 
 Understanding your data before you start analyzing it is a crucial first step in any data science project!
 
@@ -124,27 +139,36 @@ The `n` column shows how many times each name appears in the dataset. Your job i
 ```
 
 
-```{r q1, eval = FALSE}
+```{r q1, eval = TRUE}
 lego_sales %>%
-  count(_____, sort = _____) %>%
+  count(first_name, sort = TRUE) %>%
   slice(1:3)
 ```
 
-**Write your answer here:** In this sample, the three most common first names of purchasers are...
+**Write your answer here:** In this sample, the three most common first names of purchasers are Jackson, Jacob, and Joseph. Each first name has 13, 11, and 11 observations respectively.
 
 2.  What are the three most common themes of Lego sets purchased?
 
-```{r q2, eval = FALSE}
+```{r q2, eval = TRUE}
 lego_sales %>%
-  count(_____, sort = _____) %>%
+  count(theme, sort = TRUE) %>%
   slice(1:3)
 ```
 
 *Your output should show three rows with a theme name and count (n).*
 
-**Write your answer here:** In this sample, the three most common themes of Lego sets purchased are...
+**Write your answer here:** In this sample, the three most common themes of Lego sets purchased are Star Wars, Nexo Knights, and Gear themes. Each theme has 75, 64, and 55 observations respectively.
 
 3.  Among the most common theme of Lego sets purchased, what is the most common subtheme?
+
+```{r q3, eval = TRUE}
+lego_sales %>%
+  filter(theme == "Star Wars") %>%
+  count(subtheme, sort = TRUE) %>%
+  slice(1:3)
+```
+
+Among the most common theme of Lego sets purchased (Star Wars), the most common subtheme is The Force Awakens, with 15 observations.
 
  Knit, *commit, and push your changes to GitHub with an appropriate commit message. Make sure to commit and push all changed files so that your Git pane is cleared up afterwards.*
 
