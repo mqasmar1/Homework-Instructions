@@ -1,78 +1,78 @@
 ## load packages ----------------------------------------------------------------
 #
-#library(tidyverse)
-#library(rvest)
-#library(here) 
+library(tidyverse)
+library(rvest)
+library(here) 
 #
 ## function: scrape_pac ---------------------------------------------------------
 #
-#scrape_pac <- function(url) {
+scrape_pac <- function(url) {
 #  
 #  # read the page
-#  page <- ___(___)
+  page <- read_html(url)
 #  
 #  # exract the table
-#  pac <-  page %>%
-#    # select node .DataTable (identified using the SelectorGadget)
-#    html_node(".DataTable-Partial") %>%
-#    # parse table at node td into a data frame
-#    #   table has a head and empty cells should be filled with NAs
-#    html_table("td", header = ___, fill = ___) %>%
-#    # convert to a tibble
-#    as_tibble()
+  pac <-  page %>%
+    # select node .DataTable (identified using the SelectorGadget)
+    html_node(".DataTable-Partial") %>%
+    # parse table at node td into a data frame
+    #   table has a head and empty cells should be filled with NAs
+    html_table("td", header = TRUE, fill = TRUE) %>%
+    # convert to a tibble
+    as_tibble()
 #  
-#  # rename variables
-#  pac <- pac %>%
-#    # rename columns
-#    rename(
-#      name = ___ ,
-#      country_parent = ___,
-#      total = ___,
-#      dems = ___,
-#      repubs = ___
-#    )
+  # rename variables
+  pac <- pac %>%
+    # rename columns
+    rename(
+      name = "PAC Name (Affiliate)" ,
+      country_parent = "Country of Origin/Parent Company",
+      total = "Total",
+      dems = "Dems",
+      repubs = "Repubs"
+    )
 #  
-#  # fix name
-#  pac <- pac %>%
-#    # remove extraneous whitespaces from the name column
-#    mutate(name = ___)
+  # fix name
+  pac <- pac %>%
+    # remove extraneous whitespaces from the name column
+    mutate(name = str_squish(name))
 #  
-#  # add year
-#  pac <- pac %>%
-#    # extract last 4 characters of the URL and save as year
-#    mutate(year = ___)
+  # add year
+  pac <- pac %>%
+    # extract last 4 characters of the URL and save as year
+    mutate(year = str_sub(url, -4))
 #  
-#  # return data frame
-#  pac
+  # return data frame
+  pac
 #  
-#}
+}
 #
 ## test function ----------------------------------------------------------------
 #
-#url_2024 <- "___"
-#pac_2024 <- scrape_pac(___)
+url_2024 <- "https://www.opensecrets.org/political-action-committees-pacs/foreign-connected-pacs/2024"
+pac_2024 <- scrape_pac(url_2024)
 #
-#url_2020 <- "___"
-#pac_2020 <- scrape_pac(___)
+url_2020 <- "https://www.opensecrets.org/political-action-committees-pacs/foreign-connected-pacs/2020"
+pac_2020 <- scrape_pac(url_2020)
 #
-#url_2000 <- "___"
-#pac_2000 <- scrape_pac(___)
+url_2000 <- "https://www.opensecrets.org/political-action-committees-pacs/foreign-connected-pacs/2000"
+pac_2000 <- scrape_pac(url_2000)
 #
-## list of urls -----------------------------------------------------------------
-#
-## first part of url
-#root <- "https://www.opensecrets.org/political-action-committees-pacs/foreign-connected-pacs/"
-#
-## second part of url (election years as a sequence)
-#year <- seq(from = ___, to = ___, by = ___)
-#
+# list of urls -----------------------------------------------------------------
+
+# first part of url
+root <- "https://www.opensecrets.org/political-action-committees-pacs/foreign-connected-pacs/"
+
+# second part of url (election years as a sequence)
+year <- seq(from = 2000, to = 2024, by = 2)
+
 ## construct urls by pasting first and second parts together
-#urls <- paste0(___, ___)
+urls <- paste0(root, year)
 #
 ## map the scrape_pac function over list of urls --------------------------------
+
+pac_all <- map_dfr(urls, scrape_pac)
 #
-#pac_all <- ___(___, ___)
-#
-## write data -------------------------------------------------------------------
-#
-#write_csv(___, file = here::here("data/pac-all.csv"))
+# write data -------------------------------------------------------------------
+
+write_csv(pac_all, file = here::here("data/pac-all.csv"))
