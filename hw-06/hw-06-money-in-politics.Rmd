@@ -1,6 +1,6 @@
 ---
 title: "HW 06 - Money in US politics"
-author: "[Your Name]"
+author: "Max Asmar"
 output: 
   tufte::tufte_html:
     css: ../hw.css
