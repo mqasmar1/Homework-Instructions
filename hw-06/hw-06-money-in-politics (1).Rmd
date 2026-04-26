@@ -220,6 +220,8 @@ pac_all
 
 **Write a sentence describing what you observe in the separated columns.**
 
+I observe that the country_parent column has been reorganized into distinct country and parent columns. In the country column I see the country where the PAC donation originated as a char variable (categorical), and in the parent column I see the names of parent companies as a char variable (categorical).
+
 3.  Remove the character strings including `$` and `,` signs in the `total`, `dems`,and `repubs` columns and convert these columns to numeric. End your code chunk by printing out the top 10 rows of your data frame (if you just type the data frame name it should automatically do this for you). A couple hints to help you out:
 
 -   The `$` character is a special character in R and must be escaped as `"\\$"`
@@ -234,12 +236,12 @@ pac_all
 
 You can either use `mutate()` three times (once for each column) or write the same transformation three times within one `mutate()` call.
 
-```{r clean-currency, eval = FALSE}
-pac_all %>%
+```{r clean-currency, eval = TRUE}
+pac_all <- pac_all %>%
   mutate(
-    total  = total  %>% str_remove(___) %>% str_remove_all(___) %>% as.numeric(),
-    dems   = dems   %>% str_remove(___) %>% str_remove_all(___) %>% as.numeric(),
-    repubs = repubs %>% str_remove(___) %>% str_remove_all(___) %>% as.numeric()
+    total  = total  %>% str_remove("\\$") %>% str_remove_all(",") %>% as.numeric(),
+    dems   = dems   %>% str_remove("\\$") %>% str_remove_all(",") %>% as.numeric(),
+    repubs = repubs %>% str_remove("\\$") %>% str_remove_all(",") %>% as.numeric()
   )
 
 # Print top 10 rows to verify
@@ -262,11 +264,25 @@ pac_all
 **Note:** The figure you create might look slightly different than this one if the data on the website has been updated recently.
 ```
 
-```{r canada-mexico-plot}
-# Your code here
+```{r canada-mexico-plot, eval=TRUE}
+pac_all %>%
+    filter(country %in% c("Canada", "Mexico")) %>%
+    group_by(country, year) %>%
+    summarize(total_contribution = sum(total)) %>%
+    ggplot(aes(x = year, y = total_contribution, color = country)) +
+    geom_line() +
+    labs(
+      title = "Total Contributions of PACs from Canada and Mexico per year",
+      x = "Year",
+      y = "Total Contributions",
+      color = "Country"
+    )
+    
 ```
 
 **Interpretation (2-3 sentences):** Describe the trends you observe. Which country contributes more? How have contributions changed over time?
+
+I observe that Canada consistently contributes more to American PACs than Mexico does. I also notice that generally whenever Canada increases its PAC contributions, Mexico does the same, and when Canada decreases its PAC contributions, Mexico also does. I notice that there was the greatest net increase in PAC contributions between 2007 and 2017 and the greatest net decrease from around 2016 to the present.
 
 5.  The following code creates a visualization showing UK contributions to Democratic and Republican parties over time.
 
