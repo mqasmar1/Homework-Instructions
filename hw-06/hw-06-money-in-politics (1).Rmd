@@ -2,15 +2,15 @@
 title: "HW 06 - Money in US politics"
 author: "Max Asmar"
 output: 
-  tufte::tufte_html:
-    css: ../hw.css
-    tufte_variant: "envisioned"
-    highlight: pygments
   tufte::tufte_handout:
     latex_engine: xelatex
     highlight: pygments
     keep_tex: true
     citation_package: natbib
+  tufte::tufte_html:
+    css: ../hw.css
+    tufte_variant: "envisioned"
+    highlight: pygments
 link-citations: true
 ---
 
@@ -335,11 +335,64 @@ pac_all %>%
 
 a.  What does the `pivot_longer()` function do in this code and why is it necessary for this visualization?
 
+In this code chunk, the pivot_longer() function merges the Democrat and Republican variables into 1 single categorical variable called "party". This is important for the visualization because the ggplot2 library requires that color be a single variable, and it makes the dataset more tidy.
+
 b.  What would happen if you removed the `group = party` argument from `geom_line()`?
+
+If you removed the `group = party` argument from the `geom_line()` function, ggplot2 would not connect the points lining up with their respective party with a trendline.
 
 c.  Modify the code to show contributions from Canada instead of the UK. What do you observe? Copy-paste the code below and make your changes.
 
+```{r eval = TRUE, message = FALSE, fig.fullwidth = TRUE, fig.asp = 0.5}
+pac_all <- read_csv("data/pac-all.csv")
+
+parse_currency <- function(x){
+  x %>%
+    # remove dollar sign
+    str_remove("\\$") %>%
+    # remove all occurences of commas
+    str_remove_all(",") %>%
+    # convert to numeric
+    as.numeric()
+}
+
+# plot
+pac_all %>%
+  separate(country_parent, into = c("country", "parent"), sep = "/", extra = "merge") %>%
+  mutate(
+    total = parse_currency(total),
+    dems = parse_currency(dems),
+    repubs = parse_currency(repubs)
+  ) %>%
+  filter(country == "Canada") %>%
+  group_by(year) %>%
+  summarise(
+    Democrat = sum(dems),
+    Republican = sum(repubs),
+    .groups = "drop"
+  ) %>%
+  pivot_longer(
+    cols = c(Democrat, Republican),
+    names_to = "party",
+    values_to = "amount"
+  ) %>%
+  ggplot(aes(x = year)) +
+  geom_line(aes(y = amount, group = party, color = party), size = 1) +
+  scale_color_manual(values = c("blue", "red")) +
+  scale_y_continuous(labels = dollar_format(scale = 0.000001, suffix = "M")) +
+  labs(
+    x = "Year",
+    y = "Amount",
+    color = "Party",
+    title = "Contribution to US politics from Canada-Connected PACs",
+    subtitle = "By party, over time"
+  ) +
+  theme_minimal()
+```
+
 **Interpretation (2-3 sentences):** What patterns do you observe in UK contributions to each party over time?
+
+UK companies tend to contribute more to the American Republican party instead of the Democratic party. However, the only time between the years 2000 and 2020 where this was not the case was between approximately 2008 and 2011, where more money was donated to the Democratic Party. After 2020, however, the UK contributions to both the Democratic and Republicann parties have dropped.
 
 Knit, *commit, and push your changes to GitHub with an appropriate commit message. Make sure to commit and push all changed files so that your Git pane is cleared up afterwards and review the md document on GitHub to make sure you're happy with the final state of your work.*
 
