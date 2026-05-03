@@ -1,6 +1,6 @@
 ---
 title: "HW 07 - Bike rentals in DC"
-author: "[Your Name]"
+author: "Max Asmar"
 output: 
   tufte::tufte_html:
     css: ../hw.css
