@@ -200,14 +200,42 @@ dcbikeshare %>%
 ```
 
   a. What does this visualization reveal about the relationship   between temperature and bike rentals over time?
+  
+The visualization reveals that higher temperatures are associated with more bike rentals, while lower temperatures are associated with fewer bike rentals. Most of these higher temperatures appear to be during June, July, and August, while most of the lower temperatures tend to be January, February, and Winter.
 
   b. Modify the code to color the points by humidity instead of temperature. What new pattern (if any) emerges?
   
-```{r bike-humidity-viz}
-# Your modified code here
+```{r bike-humidity-viz, eval = TRUE}
+dcbikeshare %>%
+  mutate(humidity = hum * 100) %>%
+  ggplot(mapping = aes(x = dteday, y = cnt, color = humidity)) +
+    geom_point(alpha = 0.7) +
+    labs(
+      title = "Bike rentals in DC, 2011 and 2012 with respect to humidity",
+      x = "Date",
+      y = "Bike renrals",
+      color = "Humidity"
+    ) +
+  theme_minimal()
 ```
 
+There is no association between humidity and bike rentals, looking at the graph, as there is a similar level of humidity throughout all months of the year.
+
 8.  Create a visualization displaying the relationship between bike rentals and season. Interpret the plot in context of the data.
+
+```{r bike-season-boxplot, eval = TRUE}
+dcbikeshare %>%
+  ggplot(mapping = aes(x = season, y = cnt)) +
+    geom_boxplot() +
+    labs(
+      title = "Distribution of Bike Rentals between Seasons in 2011-2012",
+      x = "Season",
+      y = "Bike renrals",
+    ) +
+  theme_minimal()
+```
+
+The boxplot shows that summer was the season with the highest median bike rentals, while winter was the season with the lowest median bike rentals. Fall and spring tended to have a similar number of median bike rentals, and the spread for all seasons was about equal.
 
 Knit, *commit, and push your changes to GitHub with an appropriate commit message. Make sure to commit and push all changed files so that your Git pane is cleared up afterwards.*
 
