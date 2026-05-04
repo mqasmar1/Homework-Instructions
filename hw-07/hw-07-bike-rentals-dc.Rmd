@@ -61,6 +61,7 @@ We'll use the **tidyverse** package for much of the data wrangling and visualisa
 ```{r load-packages, message = FALSE, eval = TRUE}
 library(tidyverse)
 library(dsbox)
+library(tidymodels)
 ```
 
 ## Data
@@ -186,14 +187,14 @@ Knit, *commit, and push your changes to GitHub with an appropriate commit messag
 
 ```{r fig.fullwidth = TRUE, echo=FALSE, eval=TRUE}
 dcbikeshare %>%
-  mutate(atemp_raw = atemp * 50) %>%
-  ggplot(mapping = aes(x = dteday, y = cnt, color = atemp_raw)) +
+  mutate(rawtemperature = atemp * 50) %>%
+  ggplot(mapping = aes(x = dteday, y = cnt, color = rawtemperature)) +
     geom_point(alpha = 0.7) +
     labs(
       title = "Bike rentals in DC, 2011 and 2012",
       subtitle = "Warmer temperatures associated with more bike rentals",
       x = "Date",
-      y = "Bike renrals",
+      y = "Bike rentals",
       color = "Temperature (C)"
     ) +
   theme_minimal()
@@ -213,7 +214,7 @@ dcbikeshare %>%
     labs(
       title = "Bike rentals in DC, 2011 and 2012 with respect to humidity",
       x = "Date",
-      y = "Bike renrals",
+      y = "Bike rentals",
       color = "Humidity"
     ) +
   theme_minimal()
@@ -230,7 +231,7 @@ dcbikeshare %>%
     labs(
       title = "Distribution of Bike Rentals between Seasons in 2011-2012",
       x = "Season",
-      y = "Bike renrals",
+      y = "Bike rentals",
     ) +
   theme_minimal()
 ```
@@ -243,17 +244,92 @@ Knit, *commit, and push your changes to GitHub with an appropriate commit messag
 
 9.  Fit a linear model predicting total daily bike rentals from daily temperature. Write the linear model, interpret the slope and the intercept in context of the data, and determine and interpret the $R^2$.
 
+```{r fit-bikerental-temp, eval = TRUE}
+# Remember to change eval=FALSE to eval=TRUE!
+cnt_rawtemperature_fit <- linear_reg() %>%
+  set_engine("lm") %>%
+  fit(cnt ~ rawtemperature, data = dcbikeshare)
+
+tidy(cnt_rawtemperature_fit)
+glance(cnt_rawtemperature_fit)
+```
+
+The linear model is cnt = 1215 + 162 * rawtemperature
+
+The slope means that for every 1 degree celsius increase in temperature, the number of bike rentals is expected to increase by 162, on average. The intercept means that when the temperature is 0 degrees Celsius, the number of bike rentals is expected to be 1215. The R^2 value of 0.394 means that approximately 39.4% of the variability in number of bike rentals is explained by temperature.
+
 10. Fit another linear model predicting total daily bike rentals from daily feeling temperature. Write the linear model, interpret the slope and the intercept in context of the data, and determine and interpret the $R^2$. Is temperature or feeling temperature a better predictor of bike rentals? Explain your reasoning.
+
+```{r fit-bikerental-feelingtemp, eval = TRUE}
+# Remember to change eval=FALSE to eval=TRUE!
+cnt_feeltemperature_fit <- linear_reg() %>%
+  set_engine("lm") %>%
+  fit(cnt ~ feeltemperature, data = dcbikeshare)
+
+tidy(cnt_feeltemperature_fit)
+glance(cnt_feeltemperature_fit)
+```
+
+The linear model is cnt = 946 + 150 * feeltemperature
+
+The slope means that for every 1 degree celsius increase in apparent temperature, the number of bike rentals is expected to increase by 150, on average. The intercept means that when the apparent temperature is 0 degrees Celsius, the number of bike rentals is expected to be 946. The R^2 value of 0.398 means that approximately 39.8% of the variability in number of bike rentals is explained by apparent temperature.
+
+Comparing the R^2 value of the apparent temperature model and the actual temperature model, apparent temperature is a better predictor of bike rentals, because it describes more of the variability in bike rentals. Apparent temperature describes around 0.2% more of the variability than actual temperature.
 
 11. Fit a model predicting total daily bike rentals from season, year, whether the day is holiday or not, whether the day is a workingday or not, the weather category, temperature, feeling temperature, humidity, and windspeed, as well as the interaction between feeling temperature and holiday. Record adjusted $R^2$ of the model.
 
+```{r fit-bikerental-multiplepredict, eval = TRUE}
+# Remember to change eval=FALSE to eval=TRUE!
+cnt_multiplevariable_fit <- linear_reg() %>%
+  set_engine("lm") %>%
+  fit(cnt ~ season + yr + holiday + workingday + weathersit + rawtemperature + feeltemperature + humidity + rawwindspeed + feeltemperature*holiday, data = dcbikeshare)
+
+tidy(cnt_multiplevariable_fit)
+glance(cnt_multiplevariable_fit)
+```
+
+The adjusted r^2 value is 0.82, meaning that approximately 82% of the variability in number of bike rentals is explained by the model above.
+
 12. Your model in Question 11 includes an interaction between feeling temperature and holiday. Write out the linear model equation for holidays and the linear model equation for non-holidays separately (substitute the appropriate values for the holiday variable). Is the slope of temperature the same or different for these two models? How about the slope for feeling temperature? Explain why based on the interaction term.
+
+Question 11 equation: 
+
+cnt = 2715 -277 * seasonsummer + 410 * seasonfall -1131 * seasonwinter + 2014 * yr2012 - 1384 * holidayyes + 120 * workingdayyes - 420 * weathersitmist -1907 * weathersitlight precipitation + 103 * raw temperature + 18.8 * feeltemperature - 13.6 * humidity - 40.6 * rawwindspeed + 34.4 * holidayyes:feeltemperature
+
+I subsituted 1 for the holidayyes variable.
+
+Holiday equation: 
+
+cnt = 1331 -277 * seasonsummer + 410 * seasonfall -1131 * seasonwinter + 2014 * yr2012 + 120 * workingdayyes - 420 * weathersitmist -1907 * weathersitlight precipitation + 103 * raw temperature + 53.2 * feeltemperature - 13.6 * humidity - 40.6 * rawwindspeed
+
+I subtituted 0 for the holidayyes variable.
+
+Non-Holiday Equation:
+
+cnt = 2715 -277 * seasonsummer + 410 * seasonfall -1131 * seasonwinter + 2014 * yr2012 + 120 * workingdayyes - 420 * weathersitmist -1907 * weathersitlight precipitation + 103 * raw temperature + 18.8 * feeltemperature - 13.6 * humidity - 40.6 * rawwindspeed
+
+The slope of temperature is the same for both models, because the interaction term does not include temperature. However, the feeling temperature slope is different for each model: The feeling temperature has a coefficient of 53.2 when it is a holiday, while the feeling temperature has a coefficient of 18.8 when it is not a holiday. This is because the interaction term depends on the feeling temperature, which causes the weight of feeling temperature to shift.
 
 13. Interpret the slopes of season and feeling temperature in the context of bike rentals. If the slopes are different for holidays and non-holidays, make sure to interpret both. If the variable has multiple levels, make sure you interpret all of the slope coefficients associated with it.
 
+The slope of the feeling temperature in the holiday equation means that for every 1 degree Celsius increase in apparent temperature, given that it is a holiday, the number of bike rentals is expected to increase by 53.2, with all else held constant.
+
+The slope of the feeling temperature in the non-holiday equation means that for every 1 degree Celsius increase in apparent temperature, given that it is not a holiday, the number of bike rentals is expected to increase by 18.8, with all else held constant.
+
+The slope of the seasonsummer variable is the same for both the holiday and non-holiday equations. The slope of the seasonsummer variable means that if it is summer, the number of bike rentals is expected to decrease by 277 compared to Spring, with all else held constant.
+
+The slope of the seasonfall variable is the same for both the holiday and non-holiday equations. The slope of the seasonfall variable means that if it is fall, the number of bike rentals is expected to increase by 410 compared to Spring, with all else held constant.
+
+The slope of the seasonwinter variable is the same for both the holiday and non-holiday equations. The slope of the seasonwinter variable means that if it is winter, the number of bike rentals is expected to decrease by 1131 compared to Spring, with all else held constant.
+
+
 14. Interpret the intercept in the context of bike rentals. If the intercept is different for holidays and non-holidays, make sure to interpret both.
 
+In the holiday equation, the intercept means that when it is Spring in 2011, and it is a holiday, and it is not a working day, when there is no mist or light precipitation, and there is no humidity or windspeed, and the actual and feel temperatures are 0, the expected number of bike rentals is 1331. However, if all of these conditions are true but it is not a holiday,then the expected number of bike rentals is 2715.  
+
 15. According to this model, assuming everything else is the same, in which season does the model predict total daily bike rentals to be highest and which to be the lowest?
+
+According to the model, the model predicts that daily bike rentals will be the greatest in the fall, while the daily bike rentals are predicted to be the least in the winter. I figured this out by comparing each season's slope. For example, summer has a slope of -277, spring has a slope of 0, fall has a slope of 410, and winter has a slope of -1131.
 
 Knit, *commit, and push your changes to GitHub with an appropriate commit message. Make sure to commit and push all changed files so that your Git pane is cleared up afterwards and review the md document on GitHub to make sure you're happy with the final state of your work.*
 
