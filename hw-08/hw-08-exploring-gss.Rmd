@@ -1,6 +1,6 @@
 ---
 title: "HW 08 - Exploring the GSS"
-author: "[Your Name]"
+author: "Max Asmar"
 output: 
   tufte::tufte_html:
     css: ../lab.css
@@ -119,8 +119,27 @@ Answers to this question are stored in the `harass5` variable in our dataset.
 
 1.  What are the possible responses to this question and how many respondents chose each of these answers?
 
+The possible responses to the question are "No", "Yes", and "Does not apply". 237 of the respondents voted yes, 1136 of the respondents voted no, and 96 of the respondents voted "Does not apply."
+
+```{r count-harass5, eval=TRUE}
+# For categorical data
+    gss16 %>%
+      count(harass5)
+```
+
 2.  What percent of the respondents for whom this question is applicable\
     (i.e. excluding `NA`s and `Does not apply`s) have been harassed by their superiors or co-workers at their job.
+
+```{r perecent-respondent-harassed, eval=TRUE}
+# For categorical data
+gss16 %>%
+  filter(!is.na(harass5)) %>%
+  filter(harass5 != "Does not apply") %>%
+  count(harass5) %>%
+  mutate(percentage = n / sum(n) * 100)
+```
+
+16.1% of respondents responded "Yes", meaning that 16% of respodents have been harassed by their superiors or co-workers at their job.
 
 **Checkpoint:** Before moving on, verify your work:
 
