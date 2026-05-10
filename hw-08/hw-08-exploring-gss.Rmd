@@ -63,6 +63,8 @@ We'll use the **tidyverse** package for much of the data wrangling and visualisa
 ```{r load-packages, message = FALSE, eval = TRUE}
 library(tidyverse)
 library(dsbox)
+library(tidymodels)
+library(broom)
 ```
 
 ## Data
@@ -155,9 +157,33 @@ The 2016 GSS also asked respondents how many hours and minutes they spend on ema
 
 3.  Create a new variable called `email` that combines these two variables to reports the number of minutes the respondents spend on email weekly.
 
+```{r create-email-variable, eval=TRUE}
+    gss16 <- gss16 %>%
+      mutate(email = emailhr*60 + emailmin)
+```
+
 4.  Visualize the distribution of this new variable. Find the mean and the median number of minutes respondents spend on email weekly. Is the mean or the median a better measure of the typical among of time Americans spend on email weekly? Why?
 
+The median number of minutes is 120, while the mean number of minutes is 417. I think the median is a better measure of the typical time Americans spend on email weekly. I think because the data is skewed right, the median is a better measure of center. On the histogram, I can see that most of the email values are clustered around 0-200 minutes, which makes the median of 120 minutes a better measure of center, in context.
+
+```{r email-variable-distribution, eval=TRUE}
+  ggplot(gss16, aes(x = email)) +
+    geom_histogram(binwidth = 130) +
+  labs(title = "Distribution of Weekly Email Time",
+       x = "Time per week (mins)",
+       y = "Frequency")
+```
+
+```{r email-variable-summary-stats, eval=TRUE}
+  gss16%>%
+    summarize(
+      mean_email = mean(email, na.rm=TRUE),
+      median_email = median(email, na.rm=TRUE)
+    )
+```
+
 5.  Create another new variable, `snap_insta` that is coded as "Yes" if the respondent reported using any of Snapchat (`snapchat`) or Instagram (`instagrm`), and "No" if not. If the recorded value was `NA` for both of these questions, the value in your new variable should also be `NA`.
+
 
 **Logic to implement:**
 
@@ -169,17 +195,82 @@ The 2016 GSS also asked respondents how many hours and minutes they spend on ema
 
 **Hint:** Use `case_when()` to handle these conditions. You'll need to check for the NA condition first.
 
-```{r snap-insta}
-# Your code here
+```{r create-snap_insta-variable, eval=TRUE}
+  gss16 <- gss16 %>%
+    mutate(snap_insta = case_when(
+      snapchat == "Yes" | instagrm == "Yes" ~ "Yes",
+      snapchat == "No" & instagrm == "No" ~ "No",
+      is.na(snapchat) & is.na(instagrm) ~ NA_character_
+    )
+      )
 ```
 
 6.  Calculate the percentage of Yes's for `snap_insta` among those who answered the question, i.e. excluding `NA`s.
 
+```{r perecent-yes-snap_insta, eval=TRUE}
+gss16 %>%
+  filter(!is.na(snap_insta)) %>%
+  count(snap_insta) %>%
+  mutate(percentage = n / sum(n) * 100)
+```
+
+The percentage of respondents who use snapchat or instagram is 37.5%.
+
 7.  What are the possible responses to the question *Last week were you working full time, part time, going to school, keeping house, or what?* and how many respondents chose each of these answers? Note that this information is stored in the `wrkstat` variable.
+
+```{r count-wrkstat, eval=TRUE}
+# For categorical data
+    gss16 %>%
+      count(wrkstat)
+```
+
+The possible responses to the question above are "Keeping house", with 284 responses; "Other", with 89 responses; "Retired", with 574 responses' "School", with 76 responses; "Temp not working", with 57 responses; "Unempl, laid off", with 118 responses; "Working fulltime", with 1321 responses; and "Working parttime", with 345 responses. 
 
 8.  Fit a model predicting `email` (number of minutes per week spent on email) from `educ` (number of years of education), `wrkstat`, and `snap_insta`. Interpret the slopes for each of these variables.
 
+```{r fit-email-educ-wrkstat-snap_insta, eval = TRUE}
+email_predict_educ_wrkstat_snap_insta <- linear_reg() %>%
+  set_engine("lm") %>%
+  fit(email ~ educ + wrkstat + snap_insta, data = gss16)
+
+tidy(email_predict_educ_wrkstat_snap_insta)
+```
+
+The model is email = -230 + 29.6 * educ + 33.1 * wrkstatOther + 68.3 * wrkstatRetired - 124 * wrkstatSchool -73.7 * wrkstatTemp not working + 118 * wrkstatUnempl, laid off + 367 * wrkstatWorking fulltime + 18.9 * wrkstatWorking parttime + 150 * snap_instaYes
+
+The slope of 29.6 corresponding to the "educ" variable represents that, with all else held constant, a 1 unit increase in the "educ" variable tells us that we should expect a 29.6 minute increase in time spent on emails weekly.
+
+The slope of 33.1 corresponding to the "wrkstatOther" variable represents that, with all else held constant, if the respondent marked their work status as "Other", we should expect a 33.1 minute increase in time spent on emails weekly compared to if the participant was keeping the house.
+
+The slope of 68.3 corresponding to the "wrkstatRetired" variable represents that, with all else held constant, if the respondent is retired, we should expect a 68.3 minute increase in time spent on emails weekly compared to if the participant was keeping the house.
+
+The slope of -124 corresponding to the "wrkstatSchool" variable represents that, with all else held constant, if the respondent is in school, we should expect a 124 minute decrease in time spent on emails weekly compared to if the participant was keeping the house.
+
+The slope of -73.7 corresponding to the "wrkstatTemp not working" variable represents that, with all else held constant, if the respondent is temporarily not working, we should expect a 73.7 minute decrease in time spent on emails weekly compared to if the participant was keeping the house.
+
+The slope of 118 corresponding to the "wrkstatUnempl, laid off" variable represents that, with all else held constant, if the respondent is unemployed and laid off, we should expect a 118 minute increase in time spent on emails weekly compared to if the participant was keeping the house.
+
+The slope of 367 corresponding to the "wrkstatWorking fulltime" variable represents that, with all else held constant, if the respondent is working full-time, we should expect a 367 minute increase in time spent on emails weekly compared to if the participant was keeping the house.
+
+The slope of 18.9 corresponding to the "wrkstatWorking parttime" variable represents that, with all else held constant, if the respondent is working part-time, we should expect a 18.9 minute increase in time spent on emails weekly compared to if the participant was keeping the house.
+
+
+The slope of 150 corresponding to the "snap_instaYes" variable represents that, with all else held constant, if the respondent is on Snapchat or Instagram, we should expect a 150 minute increase in time spent on emails weekly compared to if the participant did not have Snapchat and did not have Instagram.
+
 9.  Create a predicted values vs. residuals plot for this model. Are there any issues with the model? If yes, describe them.
+
+```{r fit-email-educ-wrkstat-snap_insta-residuals_plot, eval = TRUE}
+
+email_lm <- lm(email ~ educ + wrkstat + snap_insta, data = gss16)
+  augment(email_lm) %>%
+  ggplot(aes(x =.fitted, y = .resid)) +
+    geom_point() +
+    geom_hline(yintercept = 0, linetype = "dashed") +
+    labs(x = "Email Model Fitted values", y = "Email Model Residuals")
+```
+
+The residual plot shows a fan shape, meaning that the model struggles to predict minutes spent on emails per week as the predictor variables increase. The residuals are also asymmetrically distributed on the 0 line. Most points lie below the line.
+
 
 Knit, *commit, and push your changes to GitHub with an appropriate commit message. Make sure to commit and push all changed files so that your Git pane is cleared up afterwards.*
 
