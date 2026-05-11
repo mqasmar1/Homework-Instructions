@@ -2,15 +2,15 @@
 title: "HW 08 - Exploring the GSS"
 author: "Max Asmar"
 output: 
-  tufte::tufte_html:
-    css: ../lab.css
-    tufte_variant: "envisioned"
-    highlight: pygments
   tufte::tufte_handout:
     latex_engine: xelatex
     highlight: pygments
     keep_tex: true
     citation_package: natbib
+  tufte::tufte_html:
+    css: ../lab.css
+    tufte_variant: "envisioned"
+    highlight: pygments
 link-citations: true
 ---
 
@@ -124,7 +124,6 @@ Answers to this question are stored in the `harass5` variable in our dataset.
 The possible responses to the question are "No", "Yes", and "Does not apply". 237 of the respondents voted yes, 1136 of the respondents voted no, and 96 of the respondents voted "Does not apply."
 
 ```{r count-harass5, eval=TRUE}
-# For categorical data
     gss16 %>%
       count(harass5)
 ```
@@ -266,7 +265,7 @@ email_lm <- lm(email ~ educ + wrkstat + snap_insta, data = gss16)
   ggplot(aes(x =.fitted, y = .resid)) +
     geom_point() +
     geom_hline(yintercept = 0, linetype = "dashed") +
-    labs(x = "Email Model Fitted values", y = "Email Model Residuals")
+    labs(x = "Email Model Fitted values", y = "Email Model Residuals", title = "Email LM Model Residuals")
 ```
 
 The residual plot shows a fan shape, meaning that the model struggles to predict minutes spent on emails per week as the predictor variables increase. The residuals are also asymmetrically distributed on the 0 line. Most points lie below the line.
@@ -308,8 +307,22 @@ And possible responses to this question are Extremely liberal, Liberal, Slightly
 
 **Hint:** Use `case_when()` and check the exact spelling of levels by running `count(gss16, advfront)` first.
 
-```{r recode-advfront}
-# Your code here
+```{r count-advfront, eval=TRUE}
+    gss16 %>%
+      count(advfront)
+```
+
+```{r recode-advfront, eval=TRUE}
+gss16 <- gss16 %>%
+    mutate(
+      advfront_new = case_when(
+        advfront == "Strongly agree" ~ "Yes",
+        advfront == "Agree" ~ "Yes",
+        advfront == "Strongly disagree" ~ "No",
+        advfront == "Disagree" ~ "No",
+        TRUE ~ as.character(advfront)
+      )
+    )
 ```
 
 11. In a new variable, recode `polviews` such that Extremely liberal, Liberal, and Slightly liberal, are mapped to `"Liberal"`, and Slghtly conservative, Conservative, and Extrmly conservative disagree are mapped to `"Conservative"`. The remaining levels can be left as is. Make sure that the levels are in a reasonable order. Don't overwrite the existing `polviews`, instead pick a different, informative name for your new variable.
@@ -318,11 +331,42 @@ And possible responses to this question are Extremely liberal, Liberal, Slightly
 
 **Hint:** After recoding, convert to a factor with levels in order: "Liberal", "Moderate", "Conservative"
 
-```{r recode-polviews}
-# Your code here
+```{r count-polviews, eval=TRUE}
+    gss16 %>%
+      count(polviews)
+```
+
+```{r recode-polviews, eval = TRUE}
+gss16 <- gss16 %>%
+    mutate(
+      polviews_new = case_when(
+        polviews == "Extremely liberal" ~ "Liberal",
+        polviews == "Slightly liberal" ~ "Liberal",
+        polviews == "Liberal" ~ "Liberal",
+        polviews == "Extrmly conservative" ~ "Conservative",
+        polviews == "Slghtly conservative" ~ "Conservative",
+        polviews == "Conservative" ~ "Conservative",
+        TRUE ~ as.character(polviews)
+      ) %>%
+    factor(levels = c("Liberal", "Moderate", "Conservative"))
+    )
 ```
 
 12. Create a visualization that displays the relationship between these two new variables and interpret it.
+
+```{r advfront_new-polviews_new-plot, eval = TRUE}
+
+gss16 %>%
+  filter(!is.na(polviews_new)) %>%
+  filter(!is.na(advfront_new)) %>%
+  filter(advfront_new %in% c("Yes", "No")) %>%
+  ggplot(aes(x =polviews_new, fill = advfront_new)) +
+    geom_bar(position = "fill") +
+    labs(title = "Relationship between Political Leaning and Scientic Research Funding Support", x = "Political Views", y = "Proportion supporting Scientific Research Funding")
+```
+
+According to the graph, around 88% of liberals and moderates surveyed support scientific research funding, while only ~80% of conservatives surveyed support scientific research funding. There is a slight difference between the rate of support from liberals and moderates, with liberals tending to support scientific research funding the most. This could mean that liberals are the most likely to support scientific research funding out of the 3 groups, while conservatives are the least likely to support this.
+
 
 Knit, *commit, and push your changes to GitHub with an appropriate commit message. Make sure to commit and push all changed files so that your Git pane is cleared up afterwards and review the md document on GitHub to make sure you're happy with the final state of your work.*
 
