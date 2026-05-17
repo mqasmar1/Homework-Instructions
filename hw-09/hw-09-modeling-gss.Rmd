@@ -252,6 +252,8 @@ collect_metrics(gss16_fit_rs_1)
 
 The average area under the ROC curve is 0.614 and the accuracy for all cross validation folds is 0.833. 
 
+The AUC of ROC varied greatly between cross validation folds. For example, in fold 2, the AUC was 0.543, while in fold 3, the AUC was 0.692, which is 24% greater than the AUC of fold 2. This is relatively inconsistent. 
+
 9.  Now, try a different, simpler model: predict `advfront` from only `polviews` and `educ`. Specifically,
 
     -   update the recipe to reflect this simpler model specification (and name it `gss16_rec_2`),
@@ -337,19 +339,43 @@ Answers to this question are stored in the `harass5` variable in our dataset.
 
 12. Create a subset of the data that only contains `Yes` and `No` answers for the harassment question. How many responses chose each of these answers?
 
+```{r harass5-subset-yes-no, eval = TRUE}
+    gss16_harass5 <- gss16 %>%
+      filter(harass5 %in% c("Yes", "No"))
+
+gss16_harass5 %>%
+      count(harass5)
+```
+
+1136 people voted no for the harassment question, while 237 people in the survey responded yes to the harassment question.
+
 13. Describe how bootstrapping can be used to estimate the proportion of Americans who have been harassed by their superiors or co-workers at their job.
+
+Bootstrapping could be used to estimate the proportion of Americans who have been harassed by their superiors or co-workers at their job by sampling the survey data with replacement multiple times.
+
+Bootstrapping quantifies the uncertainty of the percentage of Americans harassed because it can be done multiple times and confidence intervals can be established to get a prediction of the actual percentage.
 
 14. Calculate a 95% bootstrap confidence interval for the proportion of Americans who have been harassed by their superiors or co-workers at their job. Interpret this interval in context of the data.
 
 **Hint:** Use the **infer** package workflow: `specify()` %>% `generate()` %>% `calculate()` %>% `get_confidence_interval()`
-```{r bootstrap-ci}
-# Your code here
+```{r bootstrap-ci, eval = TRUE}
+library(infer)
+set.seed(1245)
+boot_ci <- gss16_harass5 %>%
+specify(response = harass5, success = "Yes") %>%
+generate(reps = 1000, type = "bootstrap") %>%
+calculate(stat = "prop")
+get_confidence_interval(boot_ci, level = 0.95)
 ```
 
-**Interpretation:** 
+**Interpretation:** We are 95% confident that the proportion of Americans who have been harassed by their superiors or co-workers at their job is in between 15.2% and 19.4%.
 
 
 15. Would you expect a 90% confidence interval to be wider or narrower than the interval you calculated above? Explain your reasoning.
+
+I would expect a 90% confidence interval to be narrower than the interval I calculated above because to have a smaller confidence means to have a smaller range.
+
+For example, if I was on a game show and had to guess the price of a car, I would have a higher confidence of being right if I said 50,000 to 60,000 dollars rather than 52,000 to 53,000 dollars because the range is bigger for 50,000 to 60,000.
 
 Knit, *commit, and push your changes to GitHub with an appropriate commit message. Make sure to commit and push all changed files so that your Git pane is cleared up afterwards and review the md document on GitHub to make sure you're happy with the final state of your work.*
 
