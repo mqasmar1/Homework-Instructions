@@ -1,16 +1,16 @@
 ---
 title: "HW 09 - Modeling the GSS"
-author: "[Your Name]"
+author: "Max Asmar"
 output: 
+  tufte::tufte_html:
+    css: ../hw.css
+    tufte_variant: "envisioned"
+    highlight: pygments
   tufte::tufte_handout:
     latex_engine: xelatex
     highlight: pygments
     keep_tex: true
     citation_package: natbib
-  tufte::tufte_html:
-    css: ../hw.css
-    tufte_variant: "envisioned"
-    highlight: pygments
 link-citations: true
 ---
 
@@ -120,17 +120,17 @@ It's important that you don't recode the NAs, just the remaining levels.
 
 1.  Re-level the `advfront` variable such that it has two levels: `Strongly agree` and "`Agree"` combined into a new level called `agree` and the remaining levels (except `NA`s) combined into "`Not agree"`. Then, re-order the levels in the following order: `"Agree"` and `"Not agree"`. Finally, `count()` how many times each new level appears in the `advfront` variable.
 
-```{r recode-advfront, eval = FALSE}
-gss16 %
+```{r recode-advfront, eval = TRUE}
+gss16 <- gss16 %>%
   mutate(advfront = case_when(
-    advfront %in% c("Strongly agree", "Agree") ~ ___,
-    is.na(advfront) ~ ___,
-    TRUE ~ ___  # All other cases
+    advfront %in% c("Strongly agree", "Agree") ~ "Agree",
+    is.na(advfront) ~ NA_character_,
+    TRUE ~ "Not agree"  # All other cases
   ))
 
 # Reorder levels
-gss16 %
-  mutate(advfront = factor(advfront, levels = c(___, ___)))
+gss16 <- gss16 %>%
+  mutate(advfront = factor(advfront, levels = c("Agree", "Not agree")))
 
 # Count
 gss16 %>% count(advfront)
@@ -141,18 +141,38 @@ You can do this in various ways. One option is to use the `str_detect()` functio
 ```
 
 2.  Combine the levels of the `polviews` variable such that levels that have the word "liberal" in them are lumped into a level called `"Liberal"` and those that have the word conservative in them are lumped into a level called `"Conservative"`. Then, re-order the levels in the following order: `"Conservative"` , `"Moderate"`, and `"Liberal"`. Finally, `count()` how many times each new level appears in the `polviews` variable.
+
+```{r combine-polviews-levels,eval = TRUE}
+    gss16 <- gss16 %>%
+      mutate(
+        polviews = case_when(
+          str_detect(polviews, "[Ll]iberal") ~ "Liberal",
+          str_detect(polviews, "[Cc]onservative") ~ "Conservative",
+          str_detect(polviews, "Moderate") ~ "Moderate"
+        )
+      ) %>%
+      mutate(polviews = factor(polviews, levels = c("Conservative", "Moderate", "Liberal")))
+```
+
+```{r count-polyviews,eval = TRUE}
+    gss16 %>%
+      count(polviews)
+```
+
+There are 928 Conservative respondents, 1032 moderate respondents, and 796 liberal repondents in the data.
+
 3.  Create a new data frame called `gss16_advfront` that includes the variables `advfront`, `educ`, `polviews`, and `wrkstat`. Then, use the `drop_na()` function to remove rows that contain `NA`s from this new data frame. Sample code is provided below.
 
-```{r eval=FALSE}
+```{r create-gss16advfront, eval = TRUE}
 gss16_advfront <- gss16 %>%
-  select(___, ___, ___, ___) %>%
+  select(advfront, educ, polviews, wrkstat) %>%
   drop_na()
 ```
 
 4.  Split the data into training (75%) and testing (25%) data sets. Make sure to set a seed before you do the `initial_split()`. Call the training data `gss16_train` and the testing data `gss16_test`. Sample code is provided below. Use these specific names to make it easier to follow the rest of the instructions.
 
-```{r eval=FALSE}
-set.seed(___)
+```{r split-training-testing, eval = TRUE}
+set.seed(123)
 gss16_split <- initial_split(gss16_advfront)
 gss16_train <- training(gss16_split)
 gss16_test  <- testing(gss16_split)
@@ -162,7 +182,8 @@ gss16_test  <- testing(gss16_split)
 **Checkpoint** - Verify Your Data Preparation:
 
 Before building models, check that your data setup is correct:
-```{r verify-setup, eval=FALSE}
+```{r verify-setup, eval = TRUE}
+
 # Check advfront has 2 levels (plus NAs)
 gss16 %>% count(advfront)
 
@@ -187,25 +208,25 @@ All NA counts should be 0 for `gss16_advfront`. If not, revisit Question 3.
 
     -   `step_dummy()` to create dummy variables for `all_nominal()` variables that are predictors, i.e. `all_predictors()`
 
-```{r eval=FALSE}
-gss16_rec_1 <- recipe(___ ~ ___, data = ___) %>%
-  step_other(wrkstat, threshold = ___, other = "Other") %>%
+```{r create-recipe, eval=TRUE}
+gss16_rec_1 <- recipe(advfront ~ polviews + wrkstat + educ, data = gss16_train) %>%
+  step_other(wrkstat, threshold = 0.10, other = "Other") %>%
   step_dummy(all_nominal(), -all_outcomes())
 ```
 
 6.  Specify a logistic regression model using `"glm"` as the engine. Name this specification `gss16_spec`. Sample code is provided below.
 
-```{r eval=FALSE}
-gss16_spec <- ___() %>%
-  set_engine("___")
+```{r build-model, eval= TRUE}
+gss16_spec <- logistic_reg() %>%
+  set_engine("glm")
 ```
 
 7.  Build a workflow that uses the recipe you defined (`gss16_rec`) and the model you specified (`gss16_spec`). Name this workflow `gss16_wflow_1`. Sample code is provided below.
 
-```{r eval=FALSE}
+```{r build-workflow, eval = TRUE}
 gss16_wflow_1 <- workflow() %>%
-  add_model(___) %>%
-  add_recipe(___)
+  add_model(gss16_spec) %>%
+  add_recipe(gss16_rec_1)
 ```
 
 8.  Perform 5-fold cross validation. specifically,
@@ -218,8 +239,8 @@ gss16_wflow_1 <- workflow() %>%
 
     -   report the average area under the ROC curve and the accuracy for all cross validation folds `collect_metrics()`
 
-```{r eval=FALSE}
-set.seed(___)
+```{r, 5-fold-cross-val, eval=FALSE}
+set.seed(156)
 gss16_folds <- vfold_cv(___, v = ___)
 
 gss16_fit_rs_1 <- gss16_wflow_1 %>%
