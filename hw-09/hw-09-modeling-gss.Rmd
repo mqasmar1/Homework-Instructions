@@ -239,35 +239,91 @@ gss16_wflow_1 <- workflow() %>%
 
     -   report the average area under the ROC curve and the accuracy for all cross validation folds `collect_metrics()`
 
-```{r, 5-fold-cross-val, eval=FALSE}
+```{r 5-fold-cross-val, eval = TRUE}
 set.seed(156)
-gss16_folds <- vfold_cv(___, v = ___)
+gss16_folds <- vfold_cv(gss16_train, v = 5)
 
 gss16_fit_rs_1 <- gss16_wflow_1 %>%
-  fit_resamples(___)
+  fit_resamples(gss16_folds)
 
-collect_metrics(___, summarize = FALSE)
-collect_metrics(___)
+collect_metrics(gss16_fit_rs_1, summarize = FALSE)
+collect_metrics(gss16_fit_rs_1)
 ```
+
+The average area under the ROC curve is 0.614 and the accuracy for all cross validation folds is 0.833. 
 
 9.  Now, try a different, simpler model: predict `advfront` from only `polviews` and `educ`. Specifically,
 
     -   update the recipe to reflect this simpler model specification (and name it `gss16_rec_2`),
+    
+```{r create-recipe-2, eval=TRUE}
+gss16_rec_2 <- recipe(advfront ~ polviews + educ, data = gss16_train) %>%
+  step_dummy(all_nominal(), -all_outcomes())
+```
+
     -   redefine the workflow with the new recipe (and name this new workflow `gss16_wflow_2`),
+    
+```{r build-workflow-2, eval = TRUE}
+gss16_wflow_2 <- workflow() %>%
+  add_model(gss16_spec) %>%
+  add_recipe(gss16_rec_2)
+```
+
     -   perform cross validation, and
+    
+```{r 5-fold-cross-val-2, eval = TRUE}
+set.seed(156)
+
+gss16_fit_rs_2 <- gss16_wflow_2 %>%
+  fit_resamples(gss16_folds)
+
+collect_metrics(gss16_fit_rs_2, summarize = FALSE)
+collect_metrics(gss16_fit_rs_2)
+```
+
     -   report the average area under the ROC curve and the accuracy for all cross validation folds `collect_metrics()`.
+    
+The average area under the ROC curve is 0.612, while the accuracy is 0.834. 
 
 10. Comment on which model performs better (one including `wrkstat`, model 1, or the one excluding `wrkstat`, model 2) on the training data based on area under the ROC curve.
 
+Because model 1 has a greater area under the ROC curve, it performs better on the training data. Model one has an area of 0.614, while model 2 has an area of 0.612. This means that model 1 is a better predictor of the training data and better distinguishes between true and false values because it ranks positives closer to being true, and negatives closer to being false.
+
 11. Fit both models to the testing data, plot the ROC curves for the predictions for both models, and calculate the areas under the ROC curve. Does your answer to the previous exercise hold for the testing data as well? Explain your reasoning. Note: If you haven't yet done so, you'll need to first train your workflows on the training data with the following, and then use these fit objects to calculate predictions for the test data.
 
-```{r eval=FALSE}
+```{r fit-test-ROC, eval = TRUE}
 gss16_fit_1 <- gss16_wflow_1 %>%
   fit(gss16_train)
 
 gss16_fit_2 <- gss16_wflow_2 %>%
   fit(gss16_train)
+
+prediction_1 <- predict(gss16_fit_1, gss16_test, type = "prob") %>%
+  bind_cols(gss16_test)
+
+prediction_2 <- predict(gss16_fit_2, gss16_test, type = "prob") %>%
+  bind_cols(gss16_test)
+
+roc_1 <- prediction_1 %>% 
+  roc_curve(truth = advfront, .pred_Agree)
+
+roc_2 <- prediction_2 %>% 
+  roc_curve(truth = advfront, .pred_Agree) 
+
+bind_rows(
+  roc_1 %>% mutate(model = "Model 1"),
+  roc_2 %>% mutate(model = "Model 2")
+) %>%
+ggplot(aes(x = 1 - specificity, y = sensitivity, color = model)) +
+  geom_line() +
+  labs(title = "Model 1 and Model 2 ROC Curves",
+       x = "1 - Specificity", y = "Sensitivity")
+
+roc_auc(prediction_1, truth = advfront, .pred_Agree)
+roc_auc(prediction_2, truth = advfront, .pred_Agree)
 ```
+
+No, the answer to the previous exercise does not hold for the testing data. On the training data, Model 1 had a higher area under curve for ROC, meaning that it was better at differentiating between positive and negative cases; however, for the test data, model 2 actually performs better than model 1 beacuse it has an roc_auc of 0.696, while model 1 only has an roc_auc of 0.674.
 
 Knit, *commit, and push your changes to GitHub with an appropriate commit message. Make sure to commit and push all changed files so that your Git pane is cleared up afterwards.*
 
